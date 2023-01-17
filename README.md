@@ -1,14 +1,12 @@
 # Muski: Music for Airports
 
-Version of the "Music for Airports" program for the Muski website.
+Adaptation of the "Music for Airports" program by Tero Parviainen for the Muski website.
 
 Based on the JavaScript edition
 of [Ambient 1: Music for Airports 2/1](https://en.wikipedia.org/wiki/Ambient_1:_Music_for_Airports)
 by Brian Eno, as built in
 the [JavaScript Systems Music](http://teropa.info/blog/2016/07/28/javascript-systems-music.html)
 guide.
-
-by Tero Parviainen.
 
 See the [original version](https://github.com/teropa/musicforairports.js).
 
@@ -24,7 +22,7 @@ Original version by [Tero Parviainen](https://github.com/teropa/).
 With adaptations by [Eric Londaits](https://github.com/elondaits) for IMAGINARY.
 
 Uses instrument samples from
-the [Sonatina Symphonic Orchestra](http://sso.mattiaswestlund.net/download.html). You can get more
+the [Sonatina Symphonic Orchestra](https://github.com/peastman/sso). You can get more
 of them by downloading the ZIP from their site.
 
 Also uses an impulse response sample
