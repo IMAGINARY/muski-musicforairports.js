@@ -1,15 +1,24 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Muski - Music for Airports</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+</head>
 <body>
-  <!-- Change the CSS width+height to adjust size, but keep the width and height properties at 1000 -->
-  <canvas id="music-for-airports" width="1000" height="1000" style="width: 800px; height: 800px;"></canvas>
-
+  <div class="container">
+    <div class="row">
+      <div class="col text-center">
+        <canvas id="music-for-airports" width="650" height="650" style="width: 650px; height: auto; max-width: 100%;"></canvas>
+      </div>
+    </div>
+  </div>
   <!-- Polyfills -->
   <script src="https://cdn.rawgit.com/mohayonao/web-audio-api-shim/master/build/web-audio-api-shim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/1.0.0/fetch.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.slim.min.js" integrity="sha256-w8CvhFs7iHNVUtnSP0YKEg00p9Ih13rlL9zGqvLdePA=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js" integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous"></script>
   <script src="musicforairports.js"></script>
-  <!-- Alternatively use the minified build -->
-  <!-- <script src="musicforairports.min.js"></script> -->
 </body>
 </html>
