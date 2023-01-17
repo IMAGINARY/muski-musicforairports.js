@@ -1,17 +1,17 @@
 const SAMPLE_LIBRARY = {
   'Grand Piano': [
-    { note: 'A',  octave: 4, file: 'Samples/Grand Piano/piano-f-a4.wav' },
-    { note: 'A',  octave: 5, file: 'Samples/Grand Piano/piano-f-a5.wav' },
-    { note: 'A',  octave: 6, file: 'Samples/Grand Piano/piano-f-a6.wav' },
-    { note: 'C',  octave: 4, file: 'Samples/Grand Piano/piano-f-c4.wav' },
-    { note: 'C',  octave: 5, file: 'Samples/Grand Piano/piano-f-c5.wav' },
-    { note: 'C',  octave: 6, file: 'Samples/Grand Piano/piano-f-c6.wav' },
-    { note: 'D#',  octave: 4, file: 'Samples/Grand Piano/piano-f-d#4.wav' },
-    { note: 'D#',  octave: 5, file: 'Samples/Grand Piano/piano-f-d#5.wav' },
-    { note: 'D#',  octave: 6, file: 'Samples/Grand Piano/piano-f-d#6.wav' },
-    { note: 'F#',  octave: 4, file: 'Samples/Grand Piano/piano-f-f#4.wav' },
-    { note: 'F#',  octave: 5, file: 'Samples/Grand Piano/piano-f-f#5.wav' },
-    { note: 'F#',  octave: 6, file: 'Samples/Grand Piano/piano-f-f#6.wav' }
+    { note: 'A',  octave: 4, file: 'samples/grand-piano/piano-f-a4.wav' },
+    { note: 'A',  octave: 5, file: 'samples/grand-piano/piano-f-a5.wav' },
+    { note: 'A',  octave: 6, file: 'samples/grand-piano/piano-f-a6.wav' },
+    { note: 'C',  octave: 4, file: 'samples/grand-piano/piano-f-c4.wav' },
+    { note: 'C',  octave: 5, file: 'samples/grand-piano/piano-f-c5.wav' },
+    { note: 'C',  octave: 6, file: 'samples/grand-piano/piano-f-c6.wav' },
+    { note: 'D#',  octave: 4, file: 'samples/grand-piano/piano-f-ds4.wav' },
+    { note: 'D#',  octave: 5, file: 'samples/grand-piano/piano-f-ds5.wav' },
+    { note: 'D#',  octave: 6, file: 'samples/grand-piano/piano-f-ds6.wav' },
+    { note: 'F#',  octave: 4, file: 'samples/grand-piano/piano-f-fs4.wav' },
+    { note: 'F#',  octave: 5, file: 'samples/grand-piano/piano-f-fs5.wav' },
+    { note: 'F#',  octave: 6, file: 'samples/grand-piano/piano-f-fs6.wav' }
   ]
 };
 
@@ -40,7 +40,7 @@ let context = canvas.getContext('2d');
 let playingSince = null;
 
 function fetchSample(path) {
-  sampleCache[path] = sampleCache[path] || fetch(encodeURIComponent(path))
+  sampleCache[path] = sampleCache[path] || fetch(path)
     .then(response => response.arrayBuffer())
     .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
   return sampleCache[path];
@@ -151,7 +151,7 @@ function startLoop({instrument, note, duration, delay}, nextNode) {
   );
 }
 
-fetchSample('Samples/AirportTerminal.wav').then(convolverBuffer => {
+fetchSample('samples/airport-terminal.wav').then(convolverBuffer => {
 
   let convolver, runningLoops;
 
