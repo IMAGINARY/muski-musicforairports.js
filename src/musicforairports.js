@@ -30,155 +30,174 @@ const LOOPS = [
 const LANE_COLOR = 'rgba(220, 220, 220, 0.4)';
 const SOUND_COLOR = '#d8a9ff';
 
-let audioContext = new AudioContext();
-let sampleCache = {};
+$('[data-component="muski-musicforairports"]').first().each(async (index, element) => {
+  let audioContext = new AudioContext();
+  let sampleCache = {};
 
-let canvas = document.getElementById('music-for-airports');
-let context = canvas.getContext('2d');
+  const $canvas = $('<canvas></canvas>')
+    .attr({width: 650, height: 650})
+    .css({
+      width: '100%',
+      height: 'auto',
+    });
 
-// Control variable, set to start time when playing begins
-let uiPaused = false;
-let playingSince = null;
+  let context = $canvas[0].getContext('2d');
 
-function fetchSample(path) {
-  sampleCache[path] = sampleCache[path] || fetch(path)
-    .then(response => response.arrayBuffer())
-    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
-  return sampleCache[path];
-}
+  // Control variable, set to start time when playing begins
+  let uiPaused = false;
+  let playingSince = null;
 
-function noteValue(note, octave) {
-  return octave * 12 + OCTAVE.indexOf(note);
-}
-
-function getNoteDistance(note1, octave1, note2, octave2) {
-  return noteValue(note1, octave1) - noteValue(note2, octave2);
-}
-
-function getNearestSample(sampleBank, note, octave) {
-  let sortedBank = sampleBank.slice().sort((sampleA, sampleB) => {
-    let distanceToA = Math.abs(getNoteDistance(note, octave, sampleA.note, sampleA.octave));
-    let distanceToB = Math.abs(getNoteDistance(note, octave, sampleB.note, sampleB.octave));
-    return distanceToA - distanceToB;
-  });
-  return sortedBank[0];
-}
-
-function flatToSharp(note) {
-  switch (note) {
-    case 'Bb': return 'A#';
-    case 'Db': return 'C#';
-    case 'Eb': return 'D#';
-    case 'Gb': return 'F#';
-    case 'Ab': return 'G#';
-    default:   return note;
-  }
-}
-
-function getSample(instrument, noteAndOctave) {
-  let [, requestedNote, requestedOctave] = /^(\w[b\#]?)(\d)$/.exec(noteAndOctave);
-  requestedOctave = parseInt(requestedOctave, 10);
-  requestedNote = flatToSharp(requestedNote);
-  let sampleBank = SAMPLE_LIBRARY[instrument];
-  let nearestSample = getNearestSample(sampleBank, requestedNote, requestedOctave);
-  return fetchSample(nearestSample.file).then(audioBuffer => ({
-    audioBuffer: audioBuffer,
-    distance: getNoteDistance(requestedNote, requestedOctave, nearestSample.note, nearestSample.octave)
+  // Preload all samples
+  await fetchSample('samples/airport-terminal.wav');
+  await Promise.all(LOOPS.map((loop) => {
+    const {instrument, note} = loop;
+    return getSample(instrument, note);
   }));
-}
 
-function playSample(instrument, note, destination, delaySeconds = 0) {
-  getSample(instrument, note).then(({audioBuffer, distance}) => {
-    let playbackRate = Math.pow(2, distance / 12);
-    let bufferSource = audioContext.createBufferSource();
+  $(element).replaceWith($canvas);
 
-    bufferSource.buffer = audioBuffer;
-    bufferSource.playbackRate.value = playbackRate;
-
-    bufferSource.connect(destination);
-    bufferSource.start(audioContext.currentTime + delaySeconds);
-  });
-}
-
-function render() {
-  context.clearRect(0, 0, 1000, 1000);
-
-  context.strokeStyle = '#888';
-  context.lineWidth = 1;
-  context.moveTo(325, 325);
-  context.lineTo(650, 325);
-  context.stroke();
-
-  context.lineWidth = 30;
-  context.lineCap = 'round';
-  let radius = 280;
-  for (const {duration, delay} of LOOPS) {
-    const size = Math.PI * 2 / duration;
-    const offset = playingSince ? audioContext.currentTime - playingSince : 0;
-    const startAt = (delay - offset) * size;
-    const endAt = (delay + 0.01 - offset) * size;
-
-    context.strokeStyle = LANE_COLOR;
-    context.beginPath();
-    context.arc(325, 325, radius, 0, 2 * Math.PI);
-    context.stroke();
-
-    context.strokeStyle = SOUND_COLOR;
-    context.beginPath();
-    context.arc(325, 325, radius, startAt, endAt);
-    context.stroke();
-
-    radius -= 35;
+  function fetchSample(path) {
+    sampleCache[path] = sampleCache[path] || fetch(path)
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
+    return sampleCache[path];
   }
 
-  if (playingSince) {
-    requestAnimationFrame(render);
-  } else {
-    context.fillStyle = 'rgba(0, 0, 0, 0.3)';
-    context.strokeStyle = 'rgba(0, 0, 0, 0)';
-    context.beginPath();
-    context.moveTo(235, 170);
-    context.lineTo(485, 325);
-    context.lineTo(235, 455);
-    context.lineTo(235, 170);
-    context.fill();
+  function noteValue(note, octave) {
+    return octave * 12 + OCTAVE.indexOf(note);
   }
-}
 
-function startLoop({instrument, note, duration, delay}, nextNode) {
-  playSample(instrument, note, nextNode, delay);
-  return setInterval(
-    () => playSample(instrument, note, nextNode, delay),
-    duration * 1000
-  );
-}
+  function getNoteDistance(note1, octave1, note2, octave2) {
+    return noteValue(note1, octave1) - noteValue(note2, octave2);
+  }
 
-fetchSample('samples/airport-terminal.wav').then(convolverBuffer => {
-  let convolver, runningLoops, gain;
-  canvas.addEventListener('click', async () => {
-    if (!uiPaused) {
-      uiPaused = true;
-      if (playingSince) {
-        convolver.disconnect();
-        runningLoops.forEach(l => clearInterval(l));
-        playingSince = null;
-      } else {
-        await audioContext.resume();
+  function getNearestSample(sampleBank, note, octave) {
+    let sortedBank = sampleBank.slice().sort((sampleA, sampleB) => {
+      let distanceToA = Math.abs(getNoteDistance(note, octave, sampleA.note, sampleA.octave));
+      let distanceToB = Math.abs(getNoteDistance(note, octave, sampleB.note, sampleB.octave));
+      return distanceToA - distanceToB;
+    });
+    return sortedBank[0];
+  }
 
-        gain = audioContext.createGain();
-        gain.gain.value = 0.35;
-        gain.connect(audioContext.destination);
-
-        convolver = audioContext.createConvolver();
-        convolver.buffer = convolverBuffer;
-        convolver.connect(gain);
-
-        playingSince = audioContext.currentTime;
-        runningLoops = LOOPS.map(loop => startLoop(loop, convolver));
-      }
-      render();
-      uiPaused = false;
+  function flatToSharp(note) {
+    switch (note) {
+      case 'Bb': return 'A#';
+      case 'Db': return 'C#';
+      case 'Eb': return 'D#';
+      case 'Gb': return 'F#';
+      case 'Ab': return 'G#';
+      default:   return note;
     }
+  }
+
+  function getSample(instrument, noteAndOctave) {
+    let [, requestedNote, requestedOctave] = /^(\w[b\#]?)(\d)$/.exec(noteAndOctave);
+    requestedOctave = parseInt(requestedOctave, 10);
+    requestedNote = flatToSharp(requestedNote);
+    let sampleBank = SAMPLE_LIBRARY[instrument];
+    let nearestSample = getNearestSample(sampleBank, requestedNote, requestedOctave);
+    return fetchSample(nearestSample.file).then(audioBuffer => ({
+      audioBuffer: audioBuffer,
+      distance: getNoteDistance(requestedNote, requestedOctave, nearestSample.note, nearestSample.octave)
+    }));
+  }
+
+  function playSample(instrument, note, destination, delaySeconds = 0) {
+    getSample(instrument, note).then(({audioBuffer, distance}) => {
+      let playbackRate = Math.pow(2, distance / 12);
+      let bufferSource = audioContext.createBufferSource();
+
+      bufferSource.buffer = audioBuffer;
+      bufferSource.playbackRate.value = playbackRate;
+
+      bufferSource.connect(destination);
+      bufferSource.start(audioContext.currentTime + delaySeconds);
+    });
+  }
+
+  function render() {
+    context.clearRect(0, 0, 1000, 1000);
+
+    context.strokeStyle = '#888';
+    context.lineWidth = 1;
+    context.moveTo(325, 325);
+    context.lineTo(650, 325);
+    context.stroke();
+
+    context.lineWidth = 30;
+    context.lineCap = 'round';
+    let radius = 280;
+    for (const {duration, delay} of LOOPS) {
+      const size = Math.PI * 2 / duration;
+      const offset = playingSince ? audioContext.currentTime - playingSince : 0;
+      const startAt = (delay - offset) * size;
+      const endAt = (delay + 0.01 - offset) * size;
+
+      context.strokeStyle = LANE_COLOR;
+      context.beginPath();
+      context.arc(325, 325, radius, 0, 2 * Math.PI);
+      context.stroke();
+
+      context.strokeStyle = SOUND_COLOR;
+      context.beginPath();
+      context.arc(325, 325, radius, startAt, endAt);
+      context.stroke();
+
+      radius -= 35;
+    }
+
+    if (playingSince) {
+      requestAnimationFrame(render);
+    } else {
+      context.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      context.strokeStyle = 'rgba(0, 0, 0, 0)';
+      context.beginPath();
+      context.moveTo(235, 170);
+      context.lineTo(485, 325);
+      context.lineTo(235, 455);
+      context.lineTo(235, 170);
+      context.fill();
+    }
+  }
+
+  function startLoop({instrument, note, duration, delay}, nextNode) {
+    playSample(instrument, note, nextNode, delay);
+    return setInterval(
+      () => playSample(instrument, note, nextNode, delay),
+      duration * 1000
+    );
+  }
+
+  fetchSample('samples/airport-terminal.wav').then(convolverBuffer => {
+    let convolver, runningLoops, gain;
+    $canvas.on('click', async () => {
+      if (!uiPaused) {
+        uiPaused = true;
+        if (playingSince) {
+          convolver.disconnect();
+          runningLoops.forEach(l => clearInterval(l));
+          playingSince = null;
+        } else {
+          await audioContext.resume();
+
+          gain = audioContext.createGain();
+          gain.gain.value = 0.35;
+          gain.connect(audioContext.destination);
+
+          convolver = audioContext.createConvolver();
+          convolver.buffer = convolverBuffer;
+          convolver.connect(gain);
+
+          playingSince = audioContext.currentTime;
+          runningLoops = LOOPS.map(loop => startLoop(loop, convolver));
+        }
+        render();
+        uiPaused = false;
+      }
+    });
+    render();
   });
-  render();
 });
+
+
