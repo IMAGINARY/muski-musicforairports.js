@@ -37,6 +37,7 @@ let canvas = document.getElementById('music-for-airports');
 let context = canvas.getContext('2d');
 
 // Control variable, set to start time when playing begins
+let uiPaused = false;
 let playingSince = null;
 
 function fetchSample(path) {
@@ -152,23 +153,31 @@ function startLoop({instrument, note, duration, delay}, nextNode) {
 }
 
 fetchSample('samples/airport-terminal.wav').then(convolverBuffer => {
+  let convolver, runningLoops, gain;
+  canvas.addEventListener('click', async () => {
+    if (!uiPaused) {
+      uiPaused = true;
+      if (playingSince) {
+        convolver.disconnect();
+        runningLoops.forEach(l => clearInterval(l));
+        playingSince = null;
+      } else {
+        await audioContext.resume();
 
-  let convolver, runningLoops;
+        gain = audioContext.createGain();
+        gain.gain.value = 0.35;
+        gain.connect(audioContext.destination);
 
-  canvas.addEventListener('click', () => {
-    if (playingSince) {
-      convolver.disconnect();
-      runningLoops.forEach(l => clearInterval(l));
-      playingSince = null;
-    } else {
-      convolver = audioContext.createConvolver();
-      convolver.buffer = convolverBuffer;
-      convolver.connect(audioContext.destination);
-      playingSince = audioContext.currentTime;
-      runningLoops = LOOPS.map(loop => startLoop(loop, convolver));
+        convolver = audioContext.createConvolver();
+        convolver.buffer = convolverBuffer;
+        convolver.connect(gain);
+
+        playingSince = audioContext.currentTime;
+        runningLoops = LOOPS.map(loop => startLoop(loop, convolver));
+      }
+      render();
+      uiPaused = false;
     }
-    render();
   });
-
   render();
 });

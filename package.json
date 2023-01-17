@@ -1,8 +1,8 @@
 {
-  "name": "musicforairports.js",
+  "name": "muski-musicforairports",
   "version": "1.0.0",
   "description": "A JavaScript edition of Ambient 1: Music for Airports 2/1 by Brian Eno",
-  "main": "musicforairports.js",
+  "main": "dist/index.html",
   "scripts": {
     "compile": "babel src -d dist",
     "minify": "uglifyjs -o dist/musicforairports.min.js dist/musicforairports.js",
