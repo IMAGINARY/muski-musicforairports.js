@@ -27,8 +27,8 @@ const LOOPS = [
   {instrument: 'Grand Piano', note: 'Ab5', duration: 17.7, delay: 3.1}
 ];
 
-const LANE_COLOR = 'rgba(220, 220, 220, 0.3)';
-const SOUND_COLOR = '#ED146F';
+const LANE_COLOR = 'rgba(220, 220, 220, 0.4)';
+const SOUND_COLOR = '#d8a9ff';
 
 let audioContext = new AudioContext();
 let sampleCache = {};
@@ -130,6 +130,7 @@ function render() {
 
     radius -= 35;
   }
+
   if (playingSince) {
     requestAnimationFrame(render);
   } else {
