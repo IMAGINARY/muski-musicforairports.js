@@ -1,17 +1,17 @@
 const SAMPLE_LIBRARY = {
   'Grand Piano': [
-    { note: 'A',  octave: 4, file: 'samples/grand-piano/piano-f-a4.wav' },
-    { note: 'A',  octave: 5, file: 'samples/grand-piano/piano-f-a5.wav' },
-    { note: 'A',  octave: 6, file: 'samples/grand-piano/piano-f-a6.wav' },
-    { note: 'C',  octave: 4, file: 'samples/grand-piano/piano-f-c4.wav' },
-    { note: 'C',  octave: 5, file: 'samples/grand-piano/piano-f-c5.wav' },
-    { note: 'C',  octave: 6, file: 'samples/grand-piano/piano-f-c6.wav' },
-    { note: 'D#',  octave: 4, file: 'samples/grand-piano/piano-f-ds4.wav' },
-    { note: 'D#',  octave: 5, file: 'samples/grand-piano/piano-f-ds5.wav' },
-    { note: 'D#',  octave: 6, file: 'samples/grand-piano/piano-f-ds6.wav' },
-    { note: 'F#',  octave: 4, file: 'samples/grand-piano/piano-f-fs4.wav' },
-    { note: 'F#',  octave: 5, file: 'samples/grand-piano/piano-f-fs5.wav' },
-    { note: 'F#',  octave: 6, file: 'samples/grand-piano/piano-f-fs6.wav' }
+    { note: 'A',  octave: 4, file: 'grand-piano/piano-f-a4.wav' },
+    { note: 'A',  octave: 5, file: 'grand-piano/piano-f-a5.wav' },
+    { note: 'A',  octave: 6, file: 'grand-piano/piano-f-a6.wav' },
+    { note: 'C',  octave: 4, file: 'grand-piano/piano-f-c4.wav' },
+    { note: 'C',  octave: 5, file: 'grand-piano/piano-f-c5.wav' },
+    { note: 'C',  octave: 6, file: 'grand-piano/piano-f-c6.wav' },
+    { note: 'D#',  octave: 4, file: 'grand-piano/piano-f-ds4.wav' },
+    { note: 'D#',  octave: 5, file: 'grand-piano/piano-f-ds5.wav' },
+    { note: 'D#',  octave: 6, file: 'grand-piano/piano-f-ds6.wav' },
+    { note: 'F#',  octave: 4, file: 'grand-piano/piano-f-fs4.wav' },
+    { note: 'F#',  octave: 5, file: 'grand-piano/piano-f-fs5.wav' },
+    { note: 'F#',  octave: 6, file: 'grand-piano/piano-f-fs6.wav' }
   ]
 };
 
@@ -33,6 +33,7 @@ const SOUND_COLOR = '#d8a9ff';
 $('[data-component="muski-musicforairports"]').first().each(async (index, element) => {
   let audioContext = new AudioContext();
   let sampleCache = {};
+  const samplesRoot = $(element).data('samples-root') || 'samples';
 
   const $canvas = $('<canvas></canvas>')
     .attr({width: 650, height: 650})
@@ -48,7 +49,7 @@ $('[data-component="muski-musicforairports"]').first().each(async (index, elemen
   let playingSince = null;
 
   // Preload all samples
-  await fetchSample('samples/airport-terminal.wav');
+  await fetchSample('airport-terminal.wav');
   await Promise.all(LOOPS.map((loop) => {
     const {instrument, note} = loop;
     return getSample(instrument, note);
@@ -57,7 +58,7 @@ $('[data-component="muski-musicforairports"]').first().each(async (index, elemen
   $(element).replaceWith($canvas);
 
   function fetchSample(path) {
-    sampleCache[path] = sampleCache[path] || fetch(path)
+    sampleCache[path] = sampleCache[path] || fetch(`${samplesRoot}/${path}`)
       .then(response => response.arrayBuffer())
       .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer));
     return sampleCache[path];
@@ -169,7 +170,7 @@ $('[data-component="muski-musicforairports"]').first().each(async (index, elemen
     );
   }
 
-  fetchSample('samples/airport-terminal.wav').then(convolverBuffer => {
+  fetchSample('airport-terminal.wav').then(convolverBuffer => {
     let convolver, runningLoops, gain;
     $canvas.on('click', async () => {
       if (!uiPaused) {
